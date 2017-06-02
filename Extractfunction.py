@@ -14,13 +14,13 @@ def ParsingFunction(argv):
 	DiffString = ["diff","--changed-group-format='%>'","--unchanged-group-format=''"]
 	String = ''
 	directories =  os.walk(sys.argv[1])
-	path1 = argv[2]
-	path2 = argv[1]
+	split = argv[2].split('/')[0]
 	for (path,dir,files) in directories:
 		for filename in files:
 			Path1 = path
-			Path1 = argv[2] + '/'.join(Path1.split('/')[1:]) +'/'+filename
-			Path2 = path+'/'+str(filename)
+			Path1 = split +'/'+ '/'.join(Path1.split('/')[1:]) +'/'+filename
+			Path2 = os.path.join(path,filename)
+
 			if (filename.split(".")[-1] != "cpp" or os.path.exists(Path1) != True ):
 				continue
 			DiffString.append(Path1)
@@ -30,14 +30,12 @@ def ParsingFunction(argv):
 			DiffString = DiffString[:-3]
 			String += Pipe.stdout.read().replace('\'','')
 
-
 	String = String.split('\n')
-	print(String)
 	f = open('regs.txt')
 	diff = float('inf')
 	answer = []
 	FunctionData = f.read().split('\n')
-	for i in range(10):
+	for i in range(100):
 		FileName2 = String[i].split()[0]
 		DiffLine  = String[i].split()[1]
 		for j in range(len(FunctionData)-1):
