@@ -3,7 +3,13 @@ import sys
 import subprocess
 
 def Parser(argv):
-	with open('tags') as f:
+
+	tagfile = argv[1][:-1] +"_function_tags"
+	execute="ctags -R -x --c++-kinds=+p --fields=iaSnt --languages=c++ --exclude=*.h "+argv[1]+"| grep function > "+tagfile
+	os.system(execute)
+	print(execute)
+	print(tagfile)
+	with open(tagfile) as f:
 		regf = open("regs.txt",'w')
 		String=''
 		for line in f:
@@ -60,7 +66,7 @@ def ParsingFunction(argv):
 				if(temp > 0 and temp < diff):
 					diff = temp
 					answer = answer[:-1]
-					answer.append(FunctionName+"\n")
+					answer.append(FunctionName+"\t"+FileName1+"\n")
 
 		diff = float('inf')
 	answer = list(set(answer))
