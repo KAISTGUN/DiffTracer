@@ -47,7 +47,7 @@ def function_parser(argv):
 def diff_file(argv):
     print ("Diff strings..")
     diffCommand = ["diff", "--changed-group-format='%>'", "--unchanged-group-format=''"]
-    diffString = []
+    diffString = ''
     directories = os.walk(argv[1])
     split = argv[2].split('/')[0]
 
@@ -56,31 +56,29 @@ def diff_file(argv):
             Path1 = path
             Path1 = split +'/'+ '/'.join(Path1.split('/')[1:]) +'/'+filename
             Path2 = os.path.join(path,filename)
-
             if (filename.split(".")[-1] != "cpp" or os.path.exists(Path1) != True ):
                 continue
             diffCommand.append("--new-line-format="+Path2+"' %dn %L'")
             diffCommand.append(Path1)
             diffCommand.append(Path2)
-
             pipe = subprocess.Popen(diffCommand,stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             diffCommand = diffCommand[:-3]
             diffResult = pipe.stdout.read().replace('\'','')
             if diffResult != '':
-                diffString.append(diffResult)
+                diffString += diffResult
 
-    if ( diffString == []):
+    if ( diffString == ''):
         print("No difference discovered")
         sys.exit(0)
-
     diffDic = dict()
     nameList = []
     index = 0
-    for line in diffString:
+    for line in diffString.split('\n'):
         lineSplit = line.split()
+        if(lineSplit == []):
+            break
         fileName = lineSplit[0]
         diffLine  = int(lineSplit[1])
-
         if (fileName in nameList) == True :
             dupIndex = nameList.index(fileName)
             diffDic[dupIndex]['line'] = np.append(diffDic[dupIndex]['line'],diffLine)
@@ -89,7 +87,6 @@ def diff_file(argv):
             nameList.append(fileName)
             index+=1
             
-
     print("Diff Done")
     return diffDic
 
@@ -97,9 +94,12 @@ def extract_modified_function(funcDic, diffDic):
 
     '''
     Compare Diff line and Function line
+    funcDic = {'filname':,'functioname':,'line:'}
+    diffDic = {'filname':,'line:'}
     '''
     print ("Starting compare...")
     answer = []
+    prevFunc=""
     for i in range(len(diffDic)-1):
         fileName1 = diffDic[i]['filename']
         for j in range(len(funcDic)-1):
@@ -112,7 +112,15 @@ def extract_modified_function(funcDic, diffDic):
                         funcIndex = np.argmax(minus)
                         diffFunc = funcDic[j]['func'][funcIndex][0]
                         diffFile = fileName1
+                        if diffFunc == prevFunc:
+                            continue
                         answer.append(diffFunc+"\t"+diffFile+"\n")
+                        prevFunc = diffFunc
+                answer.append("+++++++++++++++++++++++++++++++++++"+
+                              "+++++++++++++++++++++++++++++++++\n"+
+                              "+++++++++++++++++++++++++++++++++++"+
+                              "+++++++++++++++++++++++++++++++++\n"
+                              )
                 break
 
     if answer == []:
@@ -120,6 +128,7 @@ def extract_modified_function(funcDic, diffDic):
         sys.exit(0)
 
     ans = ''.join(answer)
+    
     answerFile = open("answer.txt","w")
     answerFile.write(ans)
     answerFile.close()
