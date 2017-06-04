@@ -70,6 +70,7 @@ def diff_file(argv):
     if ( diffString == ''):
         print("No difference discovered")
         sys.exit(0)
+
     diffDic = dict()
     nameList = []
     index = 0
@@ -90,7 +91,7 @@ def diff_file(argv):
     print("Diff Done")
     return diffDic
 
-def extract_modified_function(funcDic, diffDic):
+def extract_modified_function(funcDic, diffDic,argv):
 
     '''
     Compare Diff line and Function line
@@ -100,14 +101,17 @@ def extract_modified_function(funcDic, diffDic):
     print ("Starting compare...")
     answer = []
     prevFunc=""
+    changedLine = 0
+
     for i in range(len(diffDic)-1):
         fileName1 = diffDic[i]['filename']
         for j in range(len(funcDic)-1):
             fileName2 = funcDic[j]['filename']
             if (fileName1 == fileName2):
                 for k in range(len(diffDic[i]['line'])):
+                    changedLine += 1
                     lineDiff = funcDic[j]['line'] - diffDic[i]['line'][k]
-                    if np.min(lineDiff) < 0:
+                    if np.min(lineDiff) <= 0:
                         minus = [float('-inf') if var > 0 else var for var in lineDiff]
                         funcIndex = np.argmax(minus)
                         diffFunc = funcDic[j]['func'][funcIndex][0]
@@ -117,22 +121,22 @@ def extract_modified_function(funcDic, diffDic):
                         answer.append(diffFunc+"\t"+diffFile+"\n")
                         prevFunc = diffFunc
                 answer.append("+++++++++++++++++++++++++++++++++++"+
-                              "+++++++++++++++++++++++++++++++++\n"+
-                              "+++++++++++++++++++++++++++++++++++"+
-                              "+++++++++++++++++++++++++++++++++\n"
-                              )
+                              "+++++++++++++++++++++++++++++++++\n")
                 break
 
     if answer == []:
         print ("No function modified")
         sys.exit(0)
 
+    ansfile = argv[1][:-1] +'_'+argv[2][:-1]+"_answer.txt"
+    answer.append("Total Patched Line: " + str(changedLine))
     ans = ''.join(answer)
-    
-    answerFile = open("answer.txt","w")
+    print("Total Patched Line: " + str(changedLine))    
+
+    answerFile = open(ansfile,"w")
     answerFile.write(ans)
     answerFile.close()
-    print ("Check answer.txt")
+    print ("Your result has been saved in "+ansfile)
 
 def main(argv):
     if (len(argv) < 3):
@@ -140,7 +144,7 @@ def main(argv):
         sys.exit(0)
     fString = function_parser(argv)
     diffDic = diff_file(argv)
-    extract_modified_function(fString, diffDic)
+    extract_modified_function(fString, diffDic, argv)
 
 if __name__ == "__main__":
     main(sys.argv)
