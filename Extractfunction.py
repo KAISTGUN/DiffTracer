@@ -1,25 +1,48 @@
 import os
 import sys
 import subprocess
-
+import numpy as np
 
 def function_parser(argv):
     print ("Parsing fuctions..")
-    tagName = os.path.basename(argv[1])
-    tagFileName = tagName + "_function_tags"
-
+    tagFileName = argv[1][:-1] + "_function_tags"
+    ctagCommand ="ctags -x -R --c++-kinds=+p --fields=iaSnt --languages=c++ --exclude=*.h --exclude=*.cc "\
+        + argv[1] +"| grep function > "+ tagFileName
     if (os.path.exists(tagFileName) != True):
-        ctagCommand ="ctags -R -x --c++-kinds=+p --fields=iaSnt --languages=c++ \
-                    --exclude=*.h "+ argv[1] +"| grep function > "+ tagFileName
         os.system(ctagCommand)
-
     tagFile = open(tagFileName)
-    functionString=[]
+    funcDic=dict()
+    index = 0
+    nameList = []
     for line in tagFile:
         lineSplit = line.split()
-        functionString.append(lineSplit[3] + " " + lineSplit[2] + " " + lineSplit[0])
+        functionName = lineSplit[0]
+        # Dealing with Specific case 'operator'
+        if (functionName == 'operator'):
+            functionName = lineSplit[0] + lineSplit[1]
+            numIndex = 2
+            while True:
+                if(lineSplit[numIndex].isdigit()):
+                    functionLine = lineSplit[numIndex]
+                    fileName = lineSplit[numIndex+1]
+                    break
+                numIndex+=1
+        else:
+            functionLine = lineSplit[2]
+            fileName = lineSplit[3]
+        functionLine = int(functionLine)
+        # If a file is already searched..
+        if (fileName in nameList) == True :
+            dupIndex = nameList.index(fileName)
+            funcDic[dupIndex]['func'].append([functionName])
+            funcDic[dupIndex]['line'] = np.append(funcDic[dupIndex]['line'],functionLine)
+        else:
+            funcDic[index] = {'filename': fileName, 'func': [functionName],'line': np.array([functionLine])}
+            nameList.append(fileName)
+            index+=1
+
     print ("Parsing Done")
-    return functionString
+    return funcDic
 
 def diff_file(argv):
     print ("Diff strings..")
@@ -50,45 +73,55 @@ def diff_file(argv):
         print("No difference discovered")
         sys.exit(0)
 
-    print("Diff Done")
-    return diffString
+    diffDic = dict()
+    nameList = []
+    index = 0
+    for line in diffString:
+        lineSplit = line.split()
+        fileName = lineSplit[0]
+        diffLine  = int(lineSplit[1])
 
-def extract_modified_function(funcString, diffString):
+        if (fileName in nameList) == True :
+            dupIndex = nameList.index(fileName)
+            diffDic[dupIndex]['line'] = np.append(diffDic[dupIndex]['line'],diffLine)
+        else:
+            diffDic[index] = {'filename': fileName, 'line': np.array([diffLine])}            
+            nameList.append(fileName)
+            index+=1
+            
+
+    print("Diff Done")
+    return diffDic
+
+def extract_modified_function(funcDic, diffDic):
 
     '''
     Compare Diff line and Function line
     '''
     print ("Starting compare...")
     answer = []
-    for i in range(len(diffString)-1):
-        minDiff = float('inf')
-        diffString_split = diffString[i].split()
-        fileName1 = diffString_split[0]
-        diffLine  = diffString_split[1]
-
-        for j in range(len(funcString)-1):
-            funcString_split = funcString[j].split()
-            fileName2 = funcString_split[0]            
-            functionLine = funcString_split[1]
-            functionName = funcString_split[2]
-
+    for i in range(len(diffDic)-1):
+        fileName1 = diffDic[i]['filename']
+        for j in range(len(funcDic)-1):
+            fileName2 = funcDic[j]['filename']
             if (fileName1 == fileName2):
-                diffLineNum = int(diffLine) - int(functionLine)
-                if(diffLineNum > 0 and minDiff > diffLineNum):
-                    minDiff = diffLineNum
-                    diffFunc = functionName
-                    diffFile = fileName1
-
-        if (minDiff != float('inf')):
-            answer.append(diffFunc+"\t"+diffFile+"\n")
+                for k in range(len(diffDic[i]['line'])):
+                    lineDiff = funcDic[j]['line'] - diffDic[i]['line'][k]
+                    if np.min(lineDiff) < 0:
+                        minus = [float('-inf') if var > 0 else var for var in lineDiff]
+                        funcIndex = np.argmax(minus)
+                        diffFunc = funcDic[j]['func'][funcIndex][0]
+                        diffFile = fileName1
+                        answer.append(diffFunc+"\t"+diffFile+"\n")
+                break
 
     if answer == []:
         print ("No function modified")
         sys.exit(0)
 
-    answer = list(set(answer))
+    ans = ''.join(answer)
     answerFile = open("answer.txt","w")
-    answerFile.write(''.join(answer))
+    answerFile.write(ans)
     answerFile.close()
     print ("Check answer.txt")
 
@@ -97,8 +130,8 @@ def main(argv):
         print("Usage: python [fileName] [Unpatched directory] [patched directory]")
         sys.exit(0)
     fString = function_parser(argv)
-    diffString = diff_file(argv)
-    extract_modified_function(fString, diffString)
+    diffDic = diff_file(argv)
+    extract_modified_function(fString, diffDic)
 
 if __name__ == "__main__":
     main(sys.argv)
