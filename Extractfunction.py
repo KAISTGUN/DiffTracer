@@ -128,7 +128,7 @@ def extract_modified_function(funcDic, diffDic,argv):
         print ("No function modified")
         sys.exit(0)
 
-    ansfile = ("answer__"+argv[1]+'__'+argv[2]).replace('/','_')
+    ansfile = ("answer__"+argv[1]+'__'+argv[2]).replace('/','_')+".csv"
     answer.append("Total Patched Line: " + str(changedLine))
     ans = ''.join(answer)
     print("Total Patched Line: " + str(changedLine))
