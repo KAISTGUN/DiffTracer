@@ -120,7 +120,8 @@ def extract_modified_function(funcDic, diffDic,argv):
                               continue
                           ansStr2 += diffFunc+","
                           prevFunc = diffFunc
-                answer.append(ansStr1+ansStr2[:-1]+"\n")
+                if (ansStr2 !=''):
+                    answer.append(ansStr1+ansStr2[:-1]+"\n")
                 break
 
     if answer == []:
