@@ -5,9 +5,9 @@ import numpy as np
 
 def function_parser(argv):
     print ("Parsing fuctions..")
-    ctagCommand ='ctags -x -R --c++-kinds=-cdfeglmnstuv \
+    ctagCommand ='ctags -x -R --c++-kinds=+cdpeglmnstuv \
     --languages=c++ --exclude=*.h --exclude=*.cc '+ argv[1]
-    ctagResult = subprocess.check_output(ctagCommand.split())
+    ctagResult = subprocess.check_output(ctagCommand.split())    
     funcDic=dict()
     index = 0
     nameList = []
@@ -107,8 +107,9 @@ def extract_modified_function(funcDic, diffDic,argv):
         for j in range(len(funcDic)-1):
             fileName2 = funcDic[j]['filename']
             if (fileName1 == fileName2):
-                ansStr1 = fileName1+"\t"
+                ansStr1 = fileName1
                 ansStr2 = ''
+                ansStr3 = ''
                 for k in range(len(diffDic[i]['line'])):
                     changedLine += 1
                     lineDiff = funcDic[j]['line'] - diffDic[i]['line'][k]
@@ -118,10 +119,11 @@ def extract_modified_function(funcDic, diffDic,argv):
                           diffFunc = funcDic[j]['func'][funcIndex][0]
                           if diffFunc == prevFunc:
                               continue
-                          ansStr2 += str(funcDic[j]['line'][funcIndex])+","
+                          ansStr2 += diffFunc+","
+                          ansStr3 += str(funcDic[j]['line'][funcIndex])+","
                           prevFunc = diffFunc
                 if (ansStr2 !=''):
-                    answer.append(ansStr1+ansStr2[:-1]+"\n")
+                    answer.append(ansStr1+"\t"+ansStr2[:-1]+"\t"+ansStr3[:-1]+"\n")
                 break
 
     if answer == []:
@@ -129,6 +131,7 @@ def extract_modified_function(funcDic, diffDic,argv):
         sys.exit(0)
 
     ansfile = ("answer__"+argv[1]+'__'+argv[2]).replace('/','_')+".csv"
+    answer.append("Total Patched Line: " + str(changedLine))
     ans = ''.join(answer)
     print("Total Patched Line: " + str(changedLine))
 
