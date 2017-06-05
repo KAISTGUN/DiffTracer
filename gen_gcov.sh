@@ -10,7 +10,7 @@ make_gcov () {
     for file in $(find . -name \*gcda); do
         #file=$(realpath --relative-to="$FIREFOX_ROOT_DIR/obj-x86_64-pc-linux-gnu" $file)
         echo "Processing ${file}..."
-        gcov -i $file > /dev/null
+        gcov $file > /dev/null
     done
 }
 
@@ -19,4 +19,5 @@ crawl () {
 }
 
 crawl $1
+sleep 60
 make_gcov

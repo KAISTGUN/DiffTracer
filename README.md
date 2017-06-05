@@ -26,3 +26,7 @@ Also, do not use abolute path. You should put 'firefox-' like folders in the fir
 
 ## Corner Case
 If File is deleted or renamed, DiffTrace does not work well; it can only diff if directory's paths are same.
+
+##
+./gen_gcov.sh: FIREFOX_ROOT_DIR
+./check_cov.py: FIREFOX_DIR
