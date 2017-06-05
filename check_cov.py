@@ -39,12 +39,12 @@ def get_called_times(src, lineno):
 def main():
     f = open("top-1m.csv", "rt")
     for line in f:
+        cnt, url = line.rstrip().split(",")
         cnt = int(cnt)
         if cnt > int(sys.argv[1]): sys.exit(0)
 
         print(line)
         # fetch one url
-        cnt, url = line.rstrip().split(",")
         output = open("%s_log" % url, "wt")
 
         # generate gcov
