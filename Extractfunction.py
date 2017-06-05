@@ -118,7 +118,7 @@ def extract_modified_function(funcDic, diffDic,argv):
                           diffFunc = funcDic[j]['func'][funcIndex][0]
                           if diffFunc == prevFunc:
                               continue
-                          ansStr2 += diffFunc+","
+                          ansStr2 += str(funcDic[j]['line'][funcIndex])+","
                           prevFunc = diffFunc
                 if (ansStr2 !=''):
                     answer.append(ansStr1+ansStr2[:-1]+"\n")
