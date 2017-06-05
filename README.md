@@ -7,7 +7,7 @@ To use Our DiffTracer, ctags and diffutils should be upgraded.
 Type below:
 ```bash
 (sudo) ./install.sh
-diff -v  # Check Diff version
+diff -v  # Diff version > 3.5 required.
 ```
 
 Next, type below:
