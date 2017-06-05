@@ -5,7 +5,7 @@ import numpy as np
 
 def function_parser(argv):
     print ("Parsing fuctions..")
-    tagFileName = argv[1][:-1] + "_function_tags"
+    tagFileName = (argv[1] + "__function_tags").replace('/','_')
     ctagCommand ="ctags -x -R --c++-kinds=+p --fields=iaSnt --languages=c++ --exclude=*.h --exclude=*.cc "\
         + argv[1] +"| grep function > "+ tagFileName
     if (os.path.exists(tagFileName) != True):
@@ -84,10 +84,10 @@ def diff_file(argv):
             dupIndex = nameList.index(fileName)
             diffDic[dupIndex]['line'] = np.append(diffDic[dupIndex]['line'],diffLine)
         else:
-            diffDic[index] = {'filename': fileName, 'line': np.array([diffLine])}            
+            diffDic[index] = {'filename': fileName, 'line': np.array([diffLine])}
             nameList.append(fileName)
             index+=1
-            
+
     print("Diff Done")
     return diffDic
 
@@ -128,10 +128,10 @@ def extract_modified_function(funcDic, diffDic,argv):
         print ("No function modified")
         sys.exit(0)
 
-    ansfile = argv[1][:-1] +'_'+argv[2][:-1]+"_answer.txt"
+    ansfile = (argv[1]+'__'+argv[2]+"__answer.txt").replace('/','_')
     answer.append("Total Patched Line: " + str(changedLine))
     ans = ''.join(answer)
-    print("Total Patched Line: " + str(changedLine))    
+    print("Total Patched Line: " + str(changedLine))
 
     answerFile = open(ansfile,"w")
     answerFile.write(ans)
