@@ -1,4 +1,5 @@
 apt-get install ctags
+pip install numpy
 wget https://ftp.gnu.org/gnu/diffutils/diffutils-3.6.tar.xz
 xz -d diffutils-3.6.tar.xz
 tar -xUf diffutils-3.6.tar
