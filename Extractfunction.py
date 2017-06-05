@@ -5,16 +5,15 @@ import numpy as np
 
 def function_parser(argv):
     print ("Parsing fuctions..")
-    tagFileName = (argv[1] + "__function_tags").replace('/','_')
-    ctagCommand ="ctags -x -R --c++-kinds=+p --fields=iaSnt --languages=c++ --exclude=*.h --exclude=*.cc "\
-        + argv[1] +"| grep function > "+ tagFileName
-    if (os.path.exists(tagFileName) != True):
-        os.system(ctagCommand)
-    tagFile = open(tagFileName)
+    ctagCommand ='ctags -x -R --c++-kinds=-cdeglmnpstuv \
+    --languages=c++ --exclude=*.h --exclude=*.cc '+ argv[1]
+    ctagResult = subprocess.check_output(ctagCommand.split())    
     funcDic=dict()
     index = 0
     nameList = []
-    for line in tagFile:
+    for line in ctagResult.split('\n'):
+        if (line ==''):
+            continue
         lineSplit = line.split()
         functionName = lineSplit[0]
         # Dealing with Specific case 'operator'
@@ -108,27 +107,27 @@ def extract_modified_function(funcDic, diffDic,argv):
         for j in range(len(funcDic)-1):
             fileName2 = funcDic[j]['filename']
             if (fileName1 == fileName2):
+                ansStr1 = fileName1+"\t"
+                ansStr2 = ''
                 for k in range(len(diffDic[i]['line'])):
                     changedLine += 1
                     lineDiff = funcDic[j]['line'] - diffDic[i]['line'][k]
                     if np.min(lineDiff) <= 0:
-                        minus = [float('-inf') if var > 0 else var for var in lineDiff]
-                        funcIndex = np.argmax(minus)
-                        diffFunc = funcDic[j]['func'][funcIndex][0]
-                        diffFile = fileName1
-                        if diffFunc == prevFunc:
-                            continue
-                        answer.append(diffFunc+"\t"+diffFile+"\n")
-                        prevFunc = diffFunc
-                answer.append("+++++++++++++++++++++++++++++++++++"+
-                              "+++++++++++++++++++++++++++++++++\n")
+                          minus = [float('-inf') if var > 0 else var for var in lineDiff]
+                          funcIndex = np.argmax(minus)
+                          diffFunc = funcDic[j]['func'][funcIndex][0]
+                          if diffFunc == prevFunc:
+                              continue
+                          ansStr2 += diffFunc+","
+                          prevFunc = diffFunc
+                answer.append(ansStr1+ansStr2[:-1]+"\n")
                 break
 
     if answer == []:
         print ("No function modified")
         sys.exit(0)
 
-    ansfile = (argv[1]+'__'+argv[2]+"__answer.txt").replace('/','_')
+    ansfile = ("answer__"+argv[1]+'__'+argv[2]).replace('/','_')
     answer.append("Total Patched Line: " + str(changedLine))
     ans = ''.join(answer)
     print("Total Patched Line: " + str(changedLine))
