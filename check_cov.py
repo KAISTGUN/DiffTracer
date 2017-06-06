@@ -4,7 +4,7 @@ import subprocess
 import sys
 import re
 
-FIREFOX_DIR = '/home/yum3/firefox-52.0.2/'
+FIREFOX_DIR = '/home/hc/firefox-52.0.2/'
 BUILD_DIR = 'obj-x86_64-pc-linux-gnu/'
 gcov_files = 0
 

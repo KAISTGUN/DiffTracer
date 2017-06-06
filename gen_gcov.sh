@@ -4,20 +4,21 @@ BUILD_DIR=$FIREFOX_ROOT_DIR/obj-x86_64-pc-linux-gnu
 FIREFOX_DIR=$BUILD_DIR/dist/bin/firefox
 JS_DIR=$BUILD_DIR/js/src
 
+curdir=`pwd`
+clean_gcov () {
+    cd $JS_DIR
+    find . -name \*gcda -exec rm -f {} \;
+}
 make_gcov () {
     cd $JS_DIR
-
-    for file in $(find . -name \*gcda); do
-        #file=$(realpath --relative-to="$FIREFOX_ROOT_DIR/obj-x86_64-pc-linux-gnu" $file)
-        echo "Processing ${file}..."
-        gcov $file > /dev/null
-    done
+    find . -name \*gcda -exec gcov {} \;
 }
 
 crawl () {
-    timeout 60 $FIREFOX_DIR --new-tab $1
+    $FIREFOX_DIR --new-tab $1
 }
 
+clean_gcov
+$curdir/keypress.py &
 crawl $1
-sleep 60
 make_gcov
