@@ -9,3 +9,4 @@ cd ..
 rm -rf diffutils-3.6.tar
 rm -rf diffutils-3.6.tar.xz
 rm -rf diffutils-3.6
+apt-get install xautomation
