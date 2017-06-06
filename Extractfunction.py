@@ -5,7 +5,7 @@ import numpy as np
 
 def function_parser(argv):
     print ("Parsing fuctions..")
-    ctagCommand ='ctags -x -R --c++-kinds=-cdpeglmnstuv \
+    ctagCommand ='ctags -x -R --c++-kinds=-cdpeglmnstuvx \
     --languages=c++ --exclude=*.h --exclude=*.cc '+ argv[1]
     ctagResult = subprocess.check_output(ctagCommand.split()) 
     funcDic=dict()
