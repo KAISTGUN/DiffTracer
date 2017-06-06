@@ -14,6 +14,7 @@ def get_gcov_list():
     gcov_files = subprocess.check_output(cmd, shell=True).rstrip().split('\n')
 
 def get_called_times(src, lineno):
+    global gcov_files
     #cmd = 'egrep "^function" %s/*gcov|cut -f2,3 -d","|c++filt' \
     #      '|egrep "::%s[\(|\<]"' \
     #      % (FIREFOX_DIR + BUILD_DIR + "js/src")
@@ -30,7 +31,6 @@ def get_called_times(src, lineno):
         return -1
     t = re.search("\n\s*(\d+|-|#{5}|={4}):\s*%d:"%lineno, open(gcov_file).read())
     cnt = t.group(1)
-    print(t.group(0))
     if cnt == '#'*5 or cnt == '='*4 or cnt == '-':
         return 0
     else:
@@ -39,14 +39,16 @@ def get_called_times(src, lineno):
 def main():
     f = open("top-1m.csv", "rt")
     for line in f:
-        # fetch one url
         cnt, url = line.rstrip().split(",")
-
         cnt = int(cnt)
         if cnt > int(sys.argv[1]): sys.exit(0)
 
+        print(line)
+        # fetch one url
+        output = open("%s_log" % url, "wt")
+
         # generate gcov
-        #os.system("./gen_gcov.sh %s" % url)
+        os.system("./gen_gcov.sh %s" % url)
         get_gcov_list()
 
         # get function list from diff result
@@ -54,9 +56,9 @@ def main():
 
         # get function list from gcov
         for l in ans_fp:
-            print(l)
-            file_loc, lines = l.rstrip().split("\t")
+            file_loc, func_names, lines = l.rstrip().split("\t")
             lines = lines.split(",")
+            func_names = func_names.split(",")
 
             #f_index = file_loc.index("/") # keep where to change
 
@@ -65,15 +67,17 @@ def main():
             #    print("File %s does not exist." % file_loc)
             #    continue
 
-            for lineno in lines:
+            for func_name, lineno in zip(func_names, lines):
                 times = get_called_times(file_loc, int(lineno))
                 if times > 0:
-                    print("%s:%s executed %d times." % (file_loc, 'asdf',
+                    output.write("%s:%s==>%d\n" % (file_loc, func_name,
                       times))
+        output.close()
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         # we can't test all 1-million sites
-        print("Usage: %s %s" % (sys.argv[0], "<how_many_sites>"))
+        print("Usage: %s %s" % (sys.argv[0],
+              "<how_many_sites>"))
         sys.exit(1)
     main()

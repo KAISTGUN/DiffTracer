@@ -15,7 +15,7 @@ make_gcov () {
 }
 
 crawl () {
-    timeout 60 $FIREFOX_DIR --new-instance --new-tab $1
+    timeout 60 $FIREFOX_DIR --new-tab $1
 }
 
 crawl $1
